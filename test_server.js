@@ -14,7 +14,7 @@ const log = (...args) => process.stdout.write(args.join(" ") + "\n");
 const BASE_URL = "http://127.0.0.1:11535";
 const API_BASE_URL = `${BASE_URL}/v1`;
 
-const client = new OpenAI({ baseURL: API_BASE_URL, apiKey: "dummy-key" });
+const client = new OpenAI({ baseURL: API_BASE_URL, apiKey: "" });
 
 async function testHealthCheck() {
   process.stdout.write("🔍 Testing health check... ");

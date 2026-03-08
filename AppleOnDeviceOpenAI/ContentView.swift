@@ -482,7 +482,7 @@ struct ContentView: View {
 
                                 client = OpenAI(
                                     base_url="\(viewModel.openaiBaseURL)",
-                                    api_key="not-needed"
+                                    api_key=""
                                 )
 
                                 response = client.chat.completions.create(
@@ -496,7 +496,7 @@ struct ContentView: View {
 
                                 const client = new OpenAI({
                                     baseURL: "\(viewModel.openaiBaseURL)",
-                                    apiKey: "not-needed",
+                                    apiKey: "",
                                 });
 
                                 const response = await client.chat.completions.create({

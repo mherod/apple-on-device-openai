@@ -97,9 +97,9 @@ class ServerViewModel: ObservableObject {
         self.hostInput = configuration.host
         self.portInput = String(configuration.port)
 
-        // Check model availability on startup
+        // Check model availability and auto-start server on launch
         Task {
-            await checkModelAvailability()
+            await startServer()
         }
     }
 

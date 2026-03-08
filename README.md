@@ -65,10 +65,9 @@ This project is implemented as a GUI application rather than a command-line tool
 
 ### Starting the Server
 
-1. Launch the app
-2. Configure server settings (default: `127.0.0.1:11535`)
-3. Click "Start Server"
-4. Server will be available at the configured address
+1. Launch the app — the server starts automatically if Apple Intelligence is available
+2. Optionally configure server settings (default: `127.0.0.1:11535`)
+3. Server will be available at the configured address
 
 ### Available Endpoints
 
@@ -121,21 +120,39 @@ for chunk in response:
 
 ## Testing
 
-You can use the included test script to verify the server is working correctly and see example usage patterns:
+Use the included Node.js test script to verify the server and see usage examples:
 
 ```bash
-python3 test_server.py
+npm install   # first time only
+node test_server.js
 ```
 
-The test script will:
-- ✅ Check server health and connectivity
-- ✅ Verify model availability and status
-- ✅ Test OpenAI SDK compatibility
-- ✅ Run multi-turn conversations
-- ✅ Test multilingual support (Chinese)
-- ✅ Demonstrate streaming functionality
+The test script covers:
+- ✅ Server health and connectivity
+- ✅ Model availability and status
+- ✅ OpenAI SDK compatibility
+- ✅ Multi-turn conversations
+- ✅ Multilingual support (Chinese)
+- ✅ Streaming functionality
 
-Make sure the server is running before executing the test script. The script provides comprehensive examples of how to interact with the API using both direct HTTP requests and the OpenAI Python SDK.
+## Model Capabilities
+
+The following capability probes were run against the Apple on-device model (macOS 26 beta 2, March 2026):
+
+| Category | Test | Result |
+|---|---|---|
+| Reasoning | Classic bat-and-ball problem | ✅ Correct — full algebra, $0.05 |
+| Code generation | Swift Fibonacci (iterative) | ✅ Correct O(n)/O(1) implementation |
+| Summarisation | Single-paragraph NLP summary | ✅ Accurate 2-sentence output |
+| Creative writing | Haiku about on-device AI | ✅ Valid structure and theme |
+| Multilingual | English → French/Spanish/Japanese | ⚠️ Spanish & Japanese correct; French mistranslated "fox" as "mouse" |
+| Math | Order-of-operations arithmetic | ✅ Correct (403), proper PEMDAS |
+| Role-play | Pirate persona via user message | ✅ Maintained persona throughout |
+| Instruction following | List exactly 5 languages, no extras | ✅ Perfect compliance |
+| Common sense | Ice cube in sealed thermos | ✅ Correct phase-change reasoning |
+| Self-awareness | "What model are you?" | ❌ Refused to answer |
+
+**Summary**: Strong general-purpose performance across reasoning, coding, math, and instruction-following. Notable limitations: occasional mistranslations in non-English output, and the model refuses questions about its own identity/capabilities.
 
 ## API Compatibility
 

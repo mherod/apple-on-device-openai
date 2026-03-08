@@ -237,6 +237,12 @@ struct ContentView: View {
     @StateObject private var testRunner = CapabilityTestRunner()
     @State private var isStarting = false
     @State private var isStopping = false
+    @State private var quickStartTab: QuickStartLanguage = .python
+
+    enum QuickStartLanguage: String, CaseIterable {
+        case python = "Python"
+        case javascript = "JavaScript"
+    }
 
     var body: some View {
         ScrollView {
@@ -463,9 +469,13 @@ struct ContentView: View {
                     // Quick Start Examples
                     GroupBox("Quick Start") {
                         VStack(alignment: .leading, spacing: 12) {
-                            Text("Python Example:")
-                                .font(.subheadline)
-                                .fontWeight(.medium)
+                            Picker("Language", selection: $quickStartTab) {
+                                ForEach(QuickStartLanguage.allCases, id: \.self) { lang in
+                                    Text(lang.rawValue).tag(lang)
+                                }
+                            }
+                            .pickerStyle(.segmented)
+                            .labelsHidden()
 
                             let pythonCode = """
                                 from openai import OpenAI
@@ -481,10 +491,24 @@ struct ContentView: View {
                                 )
                                 """
 
+                            let jsCode = """
+                                import OpenAI from "openai";
+
+                                const client = new OpenAI({
+                                    baseURL: "\(viewModel.openaiBaseURL)",
+                                    apiKey: "not-needed",
+                                });
+
+                                const response = await client.chat.completions.create({
+                                    model: "\(viewModel.modelName)",
+                                    messages: [{ role: "user", content: "Hello!" }],
+                                });
+                                """
+
                             CodeBlock(
-                                code: pythonCode,
+                                code: quickStartTab == .python ? pythonCode : jsCode,
                                 onCopy: {
-                                    viewModel.copyToClipboard(pythonCode)
+                                    viewModel.copyToClipboard(quickStartTab == .python ? pythonCode : jsCode)
                                 })
                         }
                     }

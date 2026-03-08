@@ -1,5 +1,7 @@
 # Apple On-Device OpenAI API
 
+> **Fork** of [gety-ai/apple-on-device-openai](https://github.com/gety-ai/apple-on-device-openai) — see [Changes in this fork](#changes-in-this-fork) for what's new.
+
 A SwiftUI application that creates an OpenAI-compatible API server using Apple's on-device Foundation Models. This allows you to use Apple Intelligence models locally through familiar OpenAI API endpoints.
 
 ## Screenshot
@@ -16,7 +18,9 @@ Use it in any OpenAI compatible app:
 - **OpenAI Compatible API**: Drop-in replacement for OpenAI API with chat completions endpoint
 - **Streaming Support**: Real-time streaming responses compatible with OpenAI's streaming format
 - **On-Device Processing**: Uses Apple's Foundation Models for completely local AI processing
-- **Model Availability Check**: Automatically checks Apple Intelligence availability on startup
+- **Auto-Start**: Server starts automatically on launch — no button click required
+- **In-App Capability Tester**: Run 10 built-in prompts to benchmark the model directly from the UI
+- **Quick Start Tabs**: Python and JavaScript code samples with live server URL interpolation
 - **🚧 Tool Using (WIP)**: Function calling capabilities for extended AI functionality
 
 ## Requirements
@@ -37,7 +41,7 @@ Use it in any OpenAI compatible app:
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/gety-ai/apple-on-device-openai.git
+git clone https://github.com/mherod/apple-on-device-openai.git
 cd apple-on-device-openai
 ```
 
@@ -101,7 +105,7 @@ from openai import OpenAI
 # Point to your local server
 client = OpenAI(
     base_url="http://127.0.0.1:11535/v1",
-    api_key="not-needed"  # API key not required for local server
+    api_key=""  # API key not required for local server
 )
 
 response = client.chat.completions.create(
@@ -164,9 +168,19 @@ This server implements the OpenAI Chat Completions API with the following suppor
 - `max_tokens` - Maximum tokens in response
 - `stream` - Enable streaming responses
 
+## Changes in this fork
+
+Additions on top of the upstream [gety-ai/apple-on-device-openai](https://github.com/gety-ai/apple-on-device-openai):
+
+- **Auto-start**: server launches immediately on app open, no manual button press needed
+- **In-app capability probe runner**: 10 categorised prompts (reasoning, code, math, multilingual, role-play, etc.) run sequentially against the live server and display pass/fail results inline
+- **Python + JavaScript quick-start tabs**: the Quick Start section shows switchable code samples with the live server URL and model name interpolated in real time
+- **Refined UI**: material-card layout, pulsing status orb, HTTP method badges, one-click copy buttons for URLs and code blocks
+- **Node.js test script** (`test_server.js`): replaces the original Python test with an ES module script using the `openai` npm package; covers health, status, models list, multi-turn chat, Chinese, and streaming
+
 ## Development Notes
 
-🤖 This project was mainly "vibe coded" using Cursor + Claude Sonnet 4 & ChatGPT o3.
+🤖 This project was originally "vibe coded" using Cursor + Claude Sonnet 4 & ChatGPT o3. This fork continues with Claude Code (claude-sonnet-4-6).
 
 
 ## License

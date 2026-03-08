@@ -211,6 +211,7 @@ class ServerViewModel: ObservableObject {
 // MARK: - Main View
 struct ContentView: View {
     @StateObject private var viewModel = ServerViewModel()
+    @StateObject private var testRunner = CapabilityTestRunner()
     @State private var isStarting = false
     @State private var isStopping = false
 
@@ -510,6 +511,11 @@ struct ContentView: View {
                     }
                 }
 
+                // Capability test probe runner
+                if viewModel.isRunning {
+                    CapabilityTestSection(runner: testRunner, port: viewModel.configuration.port)
+                }
+
                 // Available endpoints - More compact version
                 if viewModel.isRunning {
                     GroupBox("All Available Endpoints") {
@@ -631,6 +637,71 @@ struct EndpointRow: View {
         case "PUT": return .orange
         case "DELETE": return .red
         default: return .gray
+        }
+    }
+}
+
+// MARK: - Capability Test Section
+
+struct CapabilityTestSection: View {
+    @ObservedObject var runner: CapabilityTestRunner
+    let port: Int
+
+    var body: some View {
+        GroupBox("Capability Tests") {
+            VStack(spacing: 12) {
+                HStack {
+                    if !runner.results.isEmpty {
+                        Text("\(runner.passCount)/\(runner.totalCount) passed")
+                            .font(.subheadline)
+                            .foregroundColor(runner.passCount == runner.totalCount ? .green : .orange)
+                    } else {
+                        Text("Run probes to evaluate model capabilities")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                    }
+                    Spacer()
+                    Button(runner.isRunning ? "Running…" : runner.results.isEmpty ? "Run Tests" : "Re-run") {
+                        Task { await runner.run(port: port) }
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.small)
+                    .disabled(runner.isRunning)
+                }
+
+                if !runner.results.isEmpty {
+                    Divider()
+                    ForEach(runner.results) { result in
+                        ProbeRow(result: result)
+                    }
+                }
+            }
+        }
+    }
+}
+
+struct ProbeRow: View {
+    let result: CapabilityTestRunner.Result
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 8) {
+            Image(systemName: result.status.icon)
+                .foregroundColor(result.status.color)
+                .frame(width: 16)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(result.probe.category)
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+                if let preview = result.status.preview {
+                    Text(preview)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .lineLimit(2)
+                }
+            }
+
+            Spacer()
         }
     }
 }

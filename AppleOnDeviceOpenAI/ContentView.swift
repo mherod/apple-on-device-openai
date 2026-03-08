@@ -208,6 +208,29 @@ class ServerViewModel: ObservableObject {
     }
 }
 
+// MARK: - Design Helpers
+
+private struct Card<Content: View>: View {
+    let content: Content
+    init(@ViewBuilder content: () -> Content) { self.content = content() }
+    var body: some View {
+        content
+            .padding(16)
+            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+            .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(Color.primary.opacity(0.07), lineWidth: 1))
+    }
+}
+
+private struct SectionLabel: View {
+    let title: String
+    var body: some View {
+        Text(title.uppercased())
+            .font(.system(.caption2, design: .rounded, weight: .semibold))
+            .tracking(1.1)
+            .foregroundStyle(.secondary)
+    }
+}
+
 // MARK: - Main View
 struct ContentView: View {
     @StateObject private var viewModel = ServerViewModel()
@@ -219,44 +242,53 @@ struct ContentView: View {
         ScrollView {
             VStack(spacing: 24) {
                 // Header
-                VStack(spacing: 8) {
+                HStack(spacing: 14) {
                     Image(systemName: "brain.head.profile")
-                        .font(.system(size: 48))
-                        .foregroundStyle(.tint)
+                        .font(.system(size: 24, weight: .light))
+                        .foregroundStyle(viewModel.isRunning ? Color.green : Color.secondary)
+                        .frame(width: 48, height: 48)
+                        .background(.regularMaterial, in: Circle())
+                        .overlay(Circle().strokeBorder(Color.primary.opacity(0.08), lineWidth: 1))
 
-                    Text("Apple On-Device OpenAI API")
-                        .font(.title)
-                        .fontWeight(.semibold)
-
-                    Text("Local Apple Intelligence through OpenAI-compatible endpoints")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                        .multilineTextAlignment(.center)
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text("Apple On-Device API")
+                            .font(.system(.title2, design: .rounded, weight: .semibold))
+                        Text("OpenAI-compatible · Local · Private")
+                            .font(.system(.caption, design: .rounded))
+                            .foregroundStyle(.secondary)
+                    }
+                    Spacer()
+                    if viewModel.isRunning {
+                        Label("Live", systemImage: "circle.fill")
+                            .font(.system(.caption, weight: .medium))
+                            .foregroundStyle(Color.green)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 5)
+                            .background(Color.green.opacity(0.12), in: Capsule())
+                    }
                 }
 
                 // Server Status
-                GroupBox("Server Status") {
-                    VStack(spacing: 16) {
-                        HStack {
-                            Circle()
-                                .fill(viewModel.isRunning ? Color.green : Color.red)
-                                .frame(width: 12, height: 12)
-
-                            Text(viewModel.isRunning ? "Running" : "Stopped")
-                                .font(.headline)
-                                .foregroundColor(viewModel.isRunning ? .green : .red)
-
+                Card {
+                    VStack(spacing: 14) {
+                        SectionLabel(title: "Server Status")
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        HStack(spacing: 12) {
+                            PulsingOrb(isRunning: viewModel.isRunning, isChecking: viewModel.isCheckingModel)
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text(viewModel.isRunning ? "Running" : viewModel.isCheckingModel ? "Starting…" : "Stopped")
+                                    .font(.system(.headline, design: .rounded, weight: .semibold))
+                                    .foregroundStyle(viewModel.isRunning ? Color.green : viewModel.isCheckingModel ? Color.orange : Color.secondary)
+                            }
                             Spacer()
-
-                            // Model name badge
                             if viewModel.isRunning {
                                 Text(viewModel.modelName)
-                                    .font(.caption)
+                                    .font(.system(.caption, design: .monospaced))
                                     .padding(.horizontal, 8)
                                     .padding(.vertical, 4)
-                                    .background(Color.blue.opacity(0.2))
-                                    .foregroundColor(.blue)
-                                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                                    .background(Color.blue.opacity(0.1), in: RoundedRectangle(cornerRadius: 6))
+                                    .overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(Color.blue.opacity(0.2), lineWidth: 1))
+                                    .foregroundStyle(Color.blue)
                             }
                         }
 
@@ -545,33 +577,24 @@ struct APIEndpointRow: View {
     let onCopy: () -> Void
 
     var body: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(title)
-                    .font(.subheadline)
-                    .fontWeight(.medium)
-                Text(subtitle)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
-
-            Spacer()
-
+        VStack(alignment: .leading, spacing: 6) {
             HStack {
-                Text(url)
-                    .font(.system(.body, design: .monospaced))
-                    .textSelection(.enabled)
-                    .lineLimit(1)
-
-                Button("Copy") {
-                    onCopy()
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(title).font(.system(.subheadline, weight: .medium))
+                    Text(subtitle).font(.caption).foregroundStyle(.tertiary)
                 }
-                .buttonStyle(.borderless)
+                Spacer()
+                CopyButton(text: url, onCopy: onCopy)
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
-            .background(Color.gray.opacity(0.1))
-            .clipShape(RoundedRectangle(cornerRadius: 8))
+            Text(url)
+                .font(.system(.footnote, design: .monospaced))
+                .foregroundStyle(.secondary)
+                .textSelection(.enabled)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Color(.textBackgroundColor).opacity(0.5), in: RoundedRectangle(cornerRadius: 7))
+                .overlay(RoundedRectangle(cornerRadius: 7).strokeBorder(Color.primary.opacity(0.06), lineWidth: 1))
         }
     }
 }
@@ -581,23 +604,16 @@ struct CodeBlock: View {
     let onCopy: () -> Void
 
     var body: some View {
-        VStack(alignment: .trailing, spacing: 8) {
-            HStack {
-                ScrollView(.horizontal, showsIndicators: false) {
-                    Text(code)
-                        .font(.system(.caption, design: .monospaced))
-                        .textSelection(.enabled)
-                        .padding()
-                }
-                .background(Color.gray.opacity(0.1))
-                .clipShape(RoundedRectangle(cornerRadius: 8))
+        VStack(alignment: .trailing, spacing: 6) {
+            ScrollView(.horizontal, showsIndicators: false) {
+                Text(code)
+                    .font(.system(.caption, design: .monospaced))
+                    .textSelection(.enabled)
+                    .padding(12)
             }
-
-            Button("Copy Code") {
-                onCopy()
-            }
-            .buttonStyle(.borderless)
-            .font(.caption)
+            .background(Color(.textBackgroundColor).opacity(0.5), in: RoundedRectangle(cornerRadius: 9))
+            .overlay(RoundedRectangle(cornerRadius: 9).strokeBorder(Color.primary.opacity(0.07), lineWidth: 1))
+            CopyButton(text: code, onCopy: onCopy)
         }
     }
 }
@@ -608,35 +624,14 @@ struct EndpointRow: View {
     let description: String
 
     var body: some View {
-        HStack {
-            Text(method)
-                .font(.system(.caption, design: .monospaced))
-                .padding(.horizontal, 6)
-                .padding(.vertical, 2)
-                .background(methodColor.opacity(0.2))
-                .foregroundColor(methodColor)
-                .clipShape(RoundedRectangle(cornerRadius: 4))
-
+        HStack(spacing: 10) {
+            MethodBadge(method: method)
             Text(path)
-                .font(.system(.body, design: .monospaced))
-
-            Text("•")
-                .foregroundColor(.secondary)
-
-            Text(description)
-                .foregroundColor(.secondary)
-
+                .font(.system(.footnote, design: .monospaced))
             Spacer()
-        }
-    }
-
-    private var methodColor: Color {
-        switch method {
-        case "GET": return .green
-        case "POST": return .blue
-        case "PUT": return .orange
-        case "DELETE": return .red
-        default: return .gray
+            Text(description)
+                .font(.caption)
+                .foregroundStyle(.tertiary)
         }
     }
 }
